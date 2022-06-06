@@ -135,11 +135,11 @@ def build_colmap_db (data_dir, defect_dir, img_dir, output_dir):
 # MAIN Routine
 build_colmap_db(data_dir, defect_dir, img_dir, output_dir)
 
-if __name__ == "__main__":
-    ## DEBUG ##
-    data_dir = '/media/cviss3/Expansion/21-06-06 gardiner intel realsense/images'
-    defect_dir = 'defect_1'
-    img_dir = 'rgb'
-    output_dir = defect_dir
-
-    build_colmap_db(data_dir, defect_dir, img_dir, output_dir)
+#if __name__ == "__main__":
+#    ## DEBUG ##
+#    data_dir = '/media/cviss3/Expansion/21-06-06 gardiner intel realsense/images'
+#    defect_dir = 'defect_1'
+#    img_dir = 'rgb'
+#    output_dir = defect_dir
+#
+#    build_colmap_db(data_dir, defect_dir, img_dir, output_dir)
