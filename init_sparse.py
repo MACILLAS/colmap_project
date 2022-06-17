@@ -5,46 +5,49 @@ import os
 import json
 from database import COLMAPDatabase
 
-parser = argparse.ArgumentParser(description="Create sparse models and init colmap database")
+def parse_args ():
+    parser = argparse.ArgumentParser(description="Create sparse models and init colmap database")
 
-parser.add_argument(
-    '--data_dir', type=str, required=True,
-    help="Folder containing extracted ROS bags."
-)
+    parser.add_argument(
+        '--data_dir', type=str, required=True,
+        help="Folder containing extracted ROS bags."
+    )
 
-parser.add_argument(
-    '--defect_dir', type=str, required=True,
-    help="defect_dir in data_dir of the scene (extracted bag of a scene)"
-)
+    parser.add_argument(
+        '--defect_dir', type=str, required=True,
+        help="defect_dir in data_dir of the scene (extracted bag of a scene)"
+    )
 
-parser.add_argument(
-    '--img_dir', type=str, required=True,
-    help="Directory where images are stored in the defect_dir"
-)
+    parser.add_argument(
+        '--img_dir', type=str, required=True,
+        help="Directory where images are stored in the defect_dir"
+    )
 
-parser.add_argument(
-    '--output_dir', type=str, required=True,
-    help="Where the database and sparse model should be stored"
-)
+    parser.add_argument(
+        '--output_dir', type=str, required=True,
+        help="Where the database and sparse model should be stored"
+    )
 
-args = parser.parse_args()
+    args = parser.parse_args()
 
-data_dir = args.data_dir
-defect_dir = args.defect_dir
-img_dir = args.img_dir
-output_dir = args.output_dir
+    data_dir = args.data_dir
+    defect_dir = args.defect_dir
+    img_dir = args.img_dir
+    output_dir = args.output_dir
 
-if not os.path.exists(data_dir):
-    raise NotADirectoryError
-    exit()
+    if not os.path.exists(data_dir):
+        raise NotADirectoryError
+        exit()
 
-if not os.path.exists(os.path.join(data_dir, defect_dir)):
-    raise NotADirectoryError
-    exit()
+    if not os.path.exists(os.path.join(data_dir, defect_dir)):
+        raise NotADirectoryError
+        exit()
 
-if not os.path.exists(os.path.join(data_dir, defect_dir, img_dir)):
-    raise NotADirectoryError
-    exit()
+    if not os.path.exists(os.path.join(data_dir, defect_dir, img_dir)):
+        raise NotADirectoryError
+        exit()
+
+    return data_dir, defect_dir, img_dir, output_dir
 
 def get_pose (image_name="1", poses=None):
     """
@@ -88,6 +91,7 @@ def build_colmap_db (data_dir, defect_dir, img_dir, output_dir):
     model1, width1, height1, params1 = 1, camera_intrinsics['width'], camera_intrinsics['height'], np.array((fx, fy, cx, cy))
 
     # Initialize ColmapDatabase
+    print(os.path.join(output_dir, str(defect_dir + "_colmap.db")))
     db = COLMAPDatabase.connect(os.path.join(output_dir, str(defect_dir + "_colmap.db")))
 
     # For convenience, try creating all the tables upfront.
@@ -125,7 +129,7 @@ def build_colmap_db (data_dir, defect_dir, img_dir, output_dir):
         qt_ts_str = str(qw) + " " + str(qx) + " " + str(qy) + " " + str(qz) + " " + str(tx) + " " + str(ty) + " " + str(tz)
         f.write(str(counter) + " " + qt_ts_str + " " + str(1) + " " + image+"\n\n")
         counter = counter + 1
-        image_ids = db.add_image(image, camera_id1)
+        image_ids = db.add_image(image, camera_id1, np.array((qw, qx, qy, qz)), np.array((tx, ty, tz)))
 
     # Commit the data to the file.
     db.commit()
@@ -133,13 +137,14 @@ def build_colmap_db (data_dir, defect_dir, img_dir, output_dir):
     f.close()
 
 # MAIN Routine
-build_colmap_db(data_dir, defect_dir, img_dir, output_dir)
+#build_colmap_db(data_dir, defect_dir, img_dir, output_dir)
 
-#if __name__ == "__main__":
-#    ## DEBUG ##
-#    data_dir = '/media/cviss3/Expansion/21-06-06 gardiner intel realsense/images'
-#    defect_dir = 'defect_1'
-#    img_dir = 'rgb'
-#    output_dir = defect_dir
-#
-#    build_colmap_db(data_dir, defect_dir, img_dir, output_dir)
+if __name__ == "__main__":
+    ## DEBUG ##
+    data_dir, defect_dir, img_dir, output_dir = parse_args()
+    #data_dir = '/media/cviss3/Expansion/Data/HL2/21-06-06 gardiner/images+poses'
+    #defect_dir = 'defect_1b'
+    #img_dir = 'images'
+    #output_dir = os.path.join(data_dir, defect_dir)
+
+    build_colmap_db(data_dir, defect_dir, img_dir, output_dir)

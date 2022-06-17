@@ -14,40 +14,24 @@ gt = hdf5_file_read.get('/depth')
 gt = np.array(gt)
 """
 
-parser = argparse.ArgumentParser(description='Pre-Processing Our Depth Script. Sample Usage: \
-python pre_process_depth.py --data_path /media/cviss3/Expansion/21-06-06\ gardiner\ intel\ realsense/images/defect_1 \
---output_path /media/cviss3/Expansion/21-06-06\ gardiner\ intel\ realsense/colmap_project/undistorted_sparse_txt_defect_1/depth/')
 
-parser.add_argument(
-    '--data_path', type=str, required=True,
-    help='i.e., path to defect_x folder, should have depth and rgb sub-folders'
-)
+def parse_args():
+    parser = argparse.ArgumentParser(description='Pre-Processing Our Depth Script. Sample Usage: \
+    python pre_process_depth.py --data_path /media/cviss3/Expansion/21-06-06\ gardiner\ intel\ realsense/images/defect_1 \
+    --output_path /media/cviss3/Expansion/21-06-06\ gardiner\ intel\ realsense/colmap_project/undistorted_sparse_txt_defect_1/depth/')
 
-parser.add_argument(
-    '--output_path', type=str, required=True,
-    help='path to the output directory (i.e., where you are saving .h5 files)'
-)
+    parser.add_argument(
+        '--data_path', type=str, required=True,
+        help='i.e., path to defect_x folder, should have depth and rgb sub-folders'
+    )
 
-args = parser.parse_args()
-data_path = args.data_path
-save_path = args.output_path
+    parser.add_argument(
+        '--output_path', type=str, required=True,
+        help='path to the output directory (i.e., where you are saving .h5 files)'
+    )
 
-# Remove the trailing / if need be.
-if data_path[-1] in ['/', '\\']:
-    base_path = data_path[: - 1]
-
-depth_path = os.path.join(
-    data_path, 'depth'
-)
-imgs_path = os.path.join(
-    data_path, 'rgb'
-)
-
-if not os.path.exists(depth_path):
-    exit()
-
-if not os.path.exists(save_path):
-    os.mkdir(save_path)
+    args = parser.parse_args()
+    return args
 
 
 def filter_depth(depth_map=None, max_range=3.5, convert_mm_to_m=False):
@@ -58,6 +42,7 @@ def filter_depth(depth_map=None, max_range=3.5, convert_mm_to_m=False):
     :param convert_mm_to_m: draw data (png) maybe in mm. Divide by 1000 to get meters.
     :return: processed ndarray
     """
+    raise DeprecationWarning
     if convert_mm_to_m:
         depth_map = depth_map / 1000
 
@@ -80,12 +65,32 @@ def save_depth_as_h5(depth_map=None, save_dir="./", img_name="debug"):
     h5f.close()
 
 
-def main(data_path, depth_path, imgs_path, save_path):
+def main():
     # data_path = os.path.join("/media/cviss3/Expansion/21-06-06 gardiner intel realsense/images/defect_1")
     # depth_path = os.path.join(data_path, "depth")
     # imgs_path = os.path.join(data_path, "rgb")
     # save_dir = os.path.join(depth_path)
     # img_name = "2"
+    args = parse_args()
+    data_path = args.data_path
+    save_path = args.output_path
+
+    # Remove the trailing / if need be.
+    if data_path[-1] in ['/', '\\']:
+        base_path = data_path[: - 1]
+
+    depth_path = os.path.join(
+        data_path, 'depth'
+    )
+    imgs_path = os.path.join(
+        data_path, 'rgb'
+    )
+
+    if not os.path.exists(depth_path):
+        exit()
+
+    if not os.path.exists(save_path):
+        os.mkdir(save_path)
 
     images_dir = os.listdir(imgs_path)
     images_dir.sort()
@@ -101,4 +106,6 @@ def main(data_path, depth_path, imgs_path, save_path):
         save_depth_as_h5(depth_map=depth_map, save_dir=save_path, img_name=img_name)
 
 
-main(data_path, depth_path, imgs_path, save_path)
+if __name__ == "__main__":
+    raise DeprecationWarning
+    main()

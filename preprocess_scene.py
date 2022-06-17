@@ -44,11 +44,11 @@ base_undistorted_sfm_path = os.path.join(
     base_path, 'Undistorted_SfM'
 )
 
-undistorted_sparse_path = os.path.join(
-    base_undistorted_sfm_path, scene_id, 'sparse_txt'
+sparse_path = os.path.join(
+    base_undistorted_sfm_path, scene_id, 'sparse_text'
 )
-if not os.path.exists(undistorted_sparse_path):
-    print("sparse-txt error")
+if not os.path.exists(sparse_path):
+    print("sparse_text error")
     exit()
 
 depths_path = os.path.join(
@@ -66,7 +66,7 @@ if not os.path.exists(images_path):
     exit()
 
 # Process cameras.txt
-with open(os.path.join(undistorted_sparse_path, 'cameras.txt'), 'r') as f:
+with open(os.path.join(sparse_path, 'cameras.txt'), 'r') as f:
     raw = f.readlines()[3:]  # skip the header
 
 camera_intrinsics = {}
@@ -75,7 +75,7 @@ for camera in raw:
     camera_intrinsics[int(camera[0])] = [float(elem) for elem in camera[2:]]
 
 # Process points3D.txt
-with open(os.path.join(undistorted_sparse_path, 'points3D.txt'), 'r') as f:
+with open(os.path.join(sparse_path, 'points3D.txt'), 'r') as f:
     raw = f.readlines()[3:]  # skip the header
 
 points3D = {}
@@ -86,7 +86,7 @@ for point3D in raw:
     ])
 
 # Process images.txt
-with open(os.path.join(undistorted_sparse_path, 'images.txt'), 'r') as f:
+with open(os.path.join(sparse_path, 'images.txt'), 'r') as f:
     raw = f.readlines()[4:]  # skip the header
 
 image_id_to_idx = {}

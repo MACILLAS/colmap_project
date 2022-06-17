@@ -12,23 +12,17 @@ With Credit To: Mihai Dusmanu, Johannes L. Schoenberger and True Price
     are dense and of good quality.
   * Install Instructions: https://colmap.github.io/install.html
     * If you have difficulty installing ceres solver: https://brucknem.github.io/posts/install-ceres-solver/
-
+    * If using older ceres solver consider: https://github.com/colmap/colmap/issues/1451 
 ## Extract Collected ROS Bags
 * Get ROS bag from shared drive
 * Launch on VM with dedicated ISO
 
-## Run main.py
-* set to appropriate paths 
-``` python
-_data_dir = "/media/cviss3/Expansion/21-06-06 gardiner intel realsense/images"
-_defect_dir = "defect_1"
-_img_dir = "rgb"
-_dummy_base_dir = "/media/cviss3/Expansion/LoFTR_our_data/dummy_struct"
-```
-* get Max's Expansion Drive 
-* Run main.py
+
 
 ## MISC. 
 * Depending on the raw data format you may need some misc. functions to convert your data.
   You can find these in util.py
       
+### Notes
+Real-sense RGB-D SLAM stereo reconstructed depth maps are not working.
+Testing HL2 dataset
