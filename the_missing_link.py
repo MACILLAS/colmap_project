@@ -63,7 +63,7 @@ def convert_npz(b, out_name):
                 "poses": b['poses'], "pair_infos": pair_infos_tuples_lst}
 
     # np.savez(out_name, **new_dict)
-    np.savez(out_name, image_path=b['image_paths'], depth_paths=b['depth_paths'], intrinsics=b['intrinsics'],
+    np.savez(out_name, image_paths=b['image_paths'], depth_paths=b['depth_paths'], intrinsics=b['intrinsics'],
              poses=b['poses'], pair_infos=pair_infos_tuples_lst)
 
 
