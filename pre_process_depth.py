@@ -101,7 +101,7 @@ def main():
         # Read Images
         depth_map = cv2.imread(os.path.join(depth_path, (img_name + ".png")), cv2.IMREAD_UNCHANGED)
         # Filter Depth Images (turn pixels > 3.5 m to 0) 0 is ignored
-        depth_map = filter_depth(depth_map=depth_map, max_range=3.5, convert_mm_to_m=True)
+        # depth_map = filter_depth(depth_map=depth_map, max_range=3.5, convert_mm_to_m=True)
         # Save the Depth as H5 file format
         save_depth_as_h5(depth_map=depth_map, save_dir=save_path, img_name=img_name)
 

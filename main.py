@@ -3,9 +3,9 @@ import os
 import shutil
 import utils_misc
 
-_data_dir = "/media/cviss3/Expansion/Data/HL2/21-06-06 gardiner/images+poses"
-_defect_dir = "defect_3"
-_img_dir = "images"
+_data_dir = "/media/cviss3/Expansion/Data/22-06-28-ParkingGarage-processed"
+_defect_dir = "robot_2022-06-28-13-17-46"
+_img_dir = "rgb"
 get_depth_stereo = True
 _dense_dir = os.path.join(_data_dir, _defect_dir, "dense")
 
@@ -104,6 +104,7 @@ if get_depth_stereo:
         subprocess.call(str_args)
         utils_misc.mv_bin_n_h5(os.path.join(_output_dir, 'undistorted_sparse', 'stereo', 'depth_maps'), _dummy_depth_dir, 3.5, True)
 '''
+
 os.makedirs(_dummy_depth_dir)
 if get_depth_stereo:
         utils_misc.mv_bin_n_h5(os.path.join(_output_dir, 'dense', 'stereo', 'depth_maps'), _dummy_depth_dir)
