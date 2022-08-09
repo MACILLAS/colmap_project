@@ -5,6 +5,9 @@ from os import path
 import cv2
 import json
 from scipy.spatial.transform import Rotation
+import time
+import math
+from pyquaternion import Quaternion
 
 data_dir = "/media/cviss3/Expansion/Data/22-06-28-ParkingGarage-processed/robot_2022-06-28-13-17-46"
 images_dir = path.join(data_dir, "rgb")
@@ -32,7 +35,10 @@ class Frame:
         principal_axis = []
         qvec = self.qc
         qvec = qvec / np.linalg.norm(qvec)
+        qvec = qvec
         w, x, y, z = qvec
+        self.qvec = Quaternion(w, x, y, z)
+
         R = np.array([
             [
                 1 - 2 * y * y - 2 * z * z,
@@ -84,6 +90,12 @@ class Frame:
 
 
 def calc_overlap(frame1, frame2):
+    """
+    calculates the overlap [0-1] of two frames
+    :param frame1: frame object
+    :param frame2: frame object
+    :return:
+    """
     non_zero_pts = np.argwhere(frame1.D > 0)
     number_of_rows = non_zero_pts.shape[0]
     random_indices = np.random.choice(number_of_rows, size=int(number_of_rows / 100), replace=False)
@@ -110,26 +122,56 @@ def calc_overlap(frame1, frame2):
     total_pts = frame1_pts.shape[0]
     return (total_pts - total_out_bnds) / total_pts
 
+def main():
+    project_name = "104_Garment_Parking_2022_06_28_13_17_46"
+    # Target NPZ Format (dict)
+    # image_paths: (ndarray: (*,)) 'Undistorted_SfM/dir/images/*.jpg'
+    # depth_paths: (ndarray: (*,)) 'phoenix/S6/zl548/MegaDepth_v1/dir/dense0/depths/*.h5
+    # intrinsics: (ndarray: (*, 3, 3))
+    # poses: (ndarray: (*, 4, 4))
+    # pair_infos: (ndarray: (**, 3)) [[ [0, 1], overlap, [0 0 0 0] ], ... ]
+    image_paths = []
+    depth_paths = []
+    frames = []
+    poses = []
+    intrinsic = []
+    for i in range(0, len(pose_df.index)):
+        framei = Frame(pose_df.iloc[i], K)
+        frames.append(framei)
+        image_paths.append(path.join('Undistorted_SfM', project_name, 'images', framei.filename+".jpg"))
+        depth_paths.append(path.join('phoenix/S6/zl548/MegaDepth_v1', project_name, 'dense0', 'depths', framei.filename+".h5"))
+        intrinsic.append(framei.K)
+        poses.append(framei.tr_mat)
 
-frame1 = Frame(pose_df.iloc[0], K)
-frame2 = Frame(pose_df.iloc[2], K)
+    pair_infos = []
+    for i in range(0, len(pose_df.index)):
+        frame1 = frames[i]
+        for ii in range(i, len(pose_df.index)):
+            qd = frame1.qvec.inverse * frames[ii].qvec
+            angle = qd.degrees
 
-overlap = calc_overlap(frame1, frame2)
-print(overlap)
-'''
-pts1 = np.array([[100, 100], [200, 200], [300, 300], [865, 373]])
-#pts2 = np.array([[200, 200], [300, 300], [858, 379]])
+            if np.abs(frame1.tc[2] - frames[ii].tc[2]) > 1:
+                pass
+            elif np.abs(angle) > 60:
+                pass
+            else:
+                overlap = calc_overlap(frame1, frames[ii])
+                if 0.5 <= overlap <= 0.8:
+                    print(str(i) + " " + str(ii))
+                    pair_infos.append([[i, ii], overlap, np.array([0, 0, 0, 0])])
 
-frame1_pts = frame1.img_pts_to_3d_g(pts=pts1)
-frame2_pts = frame2.img_pts_to_3d_g(pts=pts)
+    np.savez(project_name, image_paths=image_paths, depth_paths=depth_paths, intrinsic=intrinsic,
+             poses=poses, pair_infos=pair_infos)
 
-pts2_img = cv2.projectPoints(frame1_pts, frame2.rvecs, frame2.tvecs, frame2.K, np.array([0, 0, 0, 0, 0], dtype=np.float))[0].reshape(-1, 2)
-print(pts2_img)
-'''
+    #frame2 = Frame(pose_df.iloc[2], K)
 
-# Target NPZ Format (dict)
-# image_paths: (ndarray: (*,)) 'Undistorted_SfM/dir/images/*.jpg'
-# depth_paths: (ndarray: (*,)) 'phoenix/S6/zl548/MegaDepth_v1/dir/dense0/depths/*.h5
-# intrinsics: (ndarray: (*, 3, 3))
-# poses: (ndarray: (*, 4, 4))
-# pair_infos: (ndarray: (**, 3)) [[ [0, 1], overlap, [0 0 0 0] ], ... ]
+    #overlap = calc_overlap(frame1, frame2)
+    #print(overlap)
+
+
+
+if __name__ == "__main__":
+    start = time.time()
+    main()
+    end = time.time()
+    print(end-start)
