@@ -9,7 +9,8 @@ import time
 import math
 from pyquaternion import Quaternion
 
-data_dir = "/media/cviss3/Expansion/Data/22-06-28-ParkingGarage-processed/robot_2022-06-28-13-17-46"
+#data_dir = "/media/cviss3/Expansion/Data/22-06-28-ParkingGarage-processed/robot_2022-06-28-13-17-46"
+data_dir = "/media/cviss3/Expansion/Data/22-05-05-HomerWatsonBridge-processed-new/"
 images_dir = path.join(data_dir, "rgb")
 depths_dir = path.join(data_dir, "depth")
 
@@ -39,31 +40,39 @@ class Frame:
         w, x, y, z = qvec
         self.qvec = Quaternion(w, x, y, z)
 
-        R = np.array([
-            [
-                1 - 2 * y * y - 2 * z * z,
-                2 * x * y - 2 * z * w,
-                2 * x * z + 2 * y * w
-            ],
-            [
-                2 * x * y + 2 * z * w,
-                1 - 2 * x * x - 2 * z * z,
-                2 * y * z - 2 * x * w
-            ],
-            [
-                2 * x * z - 2 * y * w,
-                2 * y * z + 2 * x * w,
-                1 - 2 * x * x - 2 * y * y
-            ]
-        ])
-        principal_axis.append(R[2, :])
-        t = self.tc
-        # World-to-Camera pose
-        current_pose = np.zeros([4, 4])
-        current_pose[: 3, : 3] = R
-        current_pose[: 3, 3] = t
-        current_pose[3, 3] = 1
-        self.tr_mat = current_pose
+        tc = self.tc
+        qc = self.qc
+        # T_m1_c1 = tf.transformations.quaternion_matrix(qc)
+        T_m1_c1 = np.eye(4)
+        T_m1_c1[:3, :3] = Rotation.from_quat(qc).as_matrix()
+        T_m1_c1[:3, 3] = tc
+        T_c1_m1 = np.linalg.inv(T_m1_c1)
+
+        # R = np.array([
+        #     [
+        #         1 - 2 * y * y - 2 * z * z,
+        #         2 * x * y - 2 * z * w,
+        #         2 * x * z + 2 * y * w
+        #     ],
+        #     [
+        #         2 * x * y + 2 * z * w,
+        #         1 - 2 * x * x - 2 * z * z,
+        #         2 * y * z - 2 * x * w
+        #     ],
+        #     [
+        #         2 * x * z - 2 * y * w,
+        #         2 * y * z + 2 * x * w,
+        #         1 - 2 * x * x - 2 * y * y
+        #     ]
+        # ])
+        # principal_axis.append(R[2, :])
+        # t = self.tc
+        # # World-to-Camera pose
+        # current_pose = np.zeros([4, 4])
+        # current_pose[: 3, : 3] = R
+        # current_pose[: 3, 3] = t
+        # current_pose[3, 3] = 1
+        self.tr_mat = T_m1_c1
 
     def img_pts_to_3d_g(self, pts):
         x_c, y_c, z_c = project_2d_to_3d(pts.T, K, self.D, h=0)
@@ -123,7 +132,7 @@ def calc_overlap(frame1, frame2):
     return (total_pts - total_out_bnds) / total_pts
 
 def main():
-    project_name = "104_Garment_Parking_2022_06_28_13_17_46"
+    project_name = "homer_watson_bridge"
     # Target NPZ Format (dict)
     # image_paths: (ndarray: (*,)) 'Undistorted_SfM/dir/images/*.jpg'
     # depth_paths: (ndarray: (*,)) 'phoenix/S6/zl548/MegaDepth_v1/dir/dense0/depths/*.h5
